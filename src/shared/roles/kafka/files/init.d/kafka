@@ -1,0 +1,135 @@
+#!/bin/bash
+
+###
+# chkconfig: 2345 26 74
+# description: kafka service script
+#
+# Installation (CentOS):
+# copy file to /etc/init.d
+# chmod +x /etc/init.d/kafka
+#
+# Installation (Ubuntu):
+# copy file to /etc/init.d
+# chmod +x /etc/init.d/kafka
+# update-rc.d kafka defaults
+#
+#
+# Usage: (as root)
+# service kafka start
+# service kafka stop
+# service kafka status
+#
+###
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# The directory in which your application is installed
+APPLICATION_DIR="/usr/local/kafka"
+START_EXEC="bin/kafka-server-start.sh -daemon config/server.properties"
+STOP_EXEC="bin/kafka-server-stop.sh"
+
+# colors
+red='\e[0;31m'
+green='\e[0;32m'
+yellow='\e[0;33m'
+reset='\e[0m'
+
+echoRed() { echo -e "${red}$1${reset}"; }
+echoGreen() { echo -e "${green}$1${reset}"; }
+echoYellow() { echo -e "${yellow}$1${reset}"; }
+
+# Check whether kafka is running
+isRunning() {
+  # Check for running app
+  PID=$(ps ax | grep -i 'kafka\.Kafka' | grep java | grep -v grep | awk '{print $1}')
+  if [ ! -z "$PID" ]; then
+    if /bin/ps --pid "$PID" 1>&2 >/dev/null;
+    then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+start() {
+  if isRunning; then
+    echoYellow "Kafka is already running"
+    return 0
+  fi
+
+  echoGreen "Starting kafka..."
+  pushd "$APPLICATION_DIR" > /dev/null
+  eval "$START_EXEC"
+  popd > /dev/null
+
+  if isRunning; then
+    echoGreen "Kafka started"
+    exit 0
+  else
+    echoRed "Kafka has not started"
+    exit 3
+  fi
+}
+
+restart() {
+  echo "Restarting kafka..."
+  stop
+  start
+}
+
+stop() {
+  echoGreen "Stopping kafka"
+  if isRunning; then
+    pushd "$APPLICATION_DIR" > /dev/null
+    eval "$STOP_EXEC"
+    popd > /dev/null
+  fi
+}
+
+status() {
+  if isRunning; then
+    echoGreen "Kafka is running"
+  else
+    echoRed "Kafka is either stopped or inaccessible"
+  fi
+}
+
+case "$1" in
+start)
+    start
+;;
+
+status)
+   status
+   exit 0
+;;
+
+stop)
+    if isRunning; then
+	stop
+	exit 0
+    else
+	echoRed "Kafka not running"
+	exit 3
+    fi
+;;
+
+restart)
+    stop
+    for i in {1..5}; do
+        if isRunning; then
+            echoGreen "Stopping Kafka..."
+            sleep 10s
+        else
+            echoGreen "Kafka has been stopped"
+            break
+        fi
+    done
+    start
+;;
+
+*)
+    echo "Usage: $0 {status|start|stop|restart}"
+    exit 1
+esac

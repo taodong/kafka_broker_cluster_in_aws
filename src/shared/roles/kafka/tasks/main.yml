@@ -1,0 +1,59 @@
+---
+# file: tasks/main.yml
+# Install kfaka
+#
+
+- name: Copy Kafka binary to server
+  copy:
+    src: kafka_2.11-1.0.0.tgz
+    dest: /tmp
+
+- name: Unzip Kafka to /usr/local/kafka_2.11-1.0.0
+  unarchive:
+    src: /tmp/kafka_2.11-1.0.0.tgz
+    dest: /usr/local
+    remote_src: yes
+
+- name: Create softlink /usr/local/kafka
+  file:
+    src: /usr/local/kafka_2.11-1.0.0
+    dest: /usr/local/kafka
+    state: "link"
+
+- name: Creat zookeeper data folder /var/zookeeper
+  file:
+    path: /var/zookeeper
+    state: directory
+    mode: "755"
+
+- name: Replace default zookeeper.properties in /usr/local/kafka/config
+  template:
+    src: "zookeeper.properties"
+    dest: "/usr/local/kafka/config/zookeeper.properties"
+
+- name: Replace default server.properties in /usr/local/kafka/config
+  template:
+    src: "server.properties"
+    dest: "/usr/local/kafka/config/server.properties"
+
+- name: Copy zookeeper service script to /etc/init.d
+  copy:
+    src: "init.d/zookeeper"
+    dest: "/etc/init.d/zookeeper"
+    mode: "755"
+
+- name: Copy kafka service script to /etc/init.d
+  copy:
+    src: "init.d/kafka"
+    dest: "/etc/init.d/kafka"
+    mode: "755"
+
+- name: start zookeeper service automatically
+  service:
+    name: "zookeeper"
+    enabled: true
+
+- name: start kafka service automatically
+  service:
+    name: "kafka"
+    enabled: true

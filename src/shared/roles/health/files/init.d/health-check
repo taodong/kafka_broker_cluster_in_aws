@@ -1,0 +1,132 @@
+#!/bin/bash
+
+###
+# chkconfig: 2345 27 76
+# description: health check service script
+#
+# Installation (CentOS):
+# copy file to /etc/init.d
+# chmod +x /etc/init.d/health-check
+#
+# Installation (Ubuntu):
+# copy file to /etc/init.d
+# chmod +x /etc/init.d/health-check
+# update-rc.d health-check defaults
+#
+#
+# Usage: (as root)
+# service health-check start
+# service health-check stop
+# service health-check status
+#
+###
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# The directory in which your application is installed
+APPLICATION_DIR="/usr/local/health"
+EXEC="nohup python health.py > /dev/null 2>&1 &"
+
+# colors
+red='\e[0;31m'
+green='\e[0;32m'
+yellow='\e[0;33m'
+reset='\e[0m'
+
+echoRed() { echo -e "${red}$1${reset}"; }
+echoGreen() { echo -e "${green}$1${reset}"; }
+echoYellow() { echo -e "${yellow}$1${reset}"; }
+
+get_pid() {
+    PID=$(ps ax | grep -i 'health' | grep python | grep -v grep | awk '{print $1}')
+}
+
+# Check whether health-check is running
+is_running() {
+    get_pid
+    if [ ! -z "$PID" ]; then
+       return 0
+    fi
+    return 1
+}
+
+start() {
+  if is_running; then
+    echoYellow "health-check is already running"
+    return 0
+  fi
+
+  echoGreen "Starting health-check..."
+  pushd "$APPLICATION_DIR" > /dev/null
+  daemon "$EXEC"
+  popd > /dev/null
+
+  if is_running; then
+    echoGreen "health-check started"
+    exit 0
+  else
+    echoRed "health-check has not started"
+    exit 3
+  fi
+}
+
+restart() {
+  echo "Restarting health-check..."
+  stop & sleep 10
+  start
+}
+
+stop() {
+  echoGreen "Stopping health-check"
+  if is_running; then
+    kill -9 "$PID"
+  fi
+}
+
+status() {
+  if is_running; then
+    echoGreen "health-check is running"
+  else
+    echoRed "health-check is either stopped or inaccessible"
+  fi
+}
+
+case "$1" in
+start)
+    start
+;;
+
+status)
+   status
+   exit 0
+;;
+
+stop)
+    if is_running; then
+	    stop
+	    exit 0
+    else
+	    echoRed "health-check not running"
+	    exit 3
+    fi
+;;
+
+restart)
+    stop
+    for i in {1..5}; do
+        if is_running; then
+            echoGreen "Stopping Health-check..."
+            sleep 10s
+        else
+            echoGreen "Health-check has been stopped"
+            break
+        fi
+    done
+    start
+;;
+
+*)
+    echo "Usage: $0 {status|start|stop|restart}"
+    exit 1
+esac

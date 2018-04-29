@@ -1,0 +1,5 @@
+#cloud-config
+
+---
+runcmd:
+  - /usr/local/bin/setup-env.sh "${region}" "${type}"

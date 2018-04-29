@@ -1,0 +1,33 @@
+---
+# file: tasks/main.yml
+# Setup cloud init scripts
+#
+- name: Installing nginx
+  yum:
+    name: nginx
+    state: latest
+
+- name: increase os open soft file limits
+  pam_limits:
+    domain: '*'
+    limit_type: soft
+    limit_item: nofile
+    value: 3000
+
+- name: increase os open hard file limits
+  pam_limits:
+    domain: '*'
+    limit_type: hard
+    limit_item: nofile
+    value: 3000
+
+- name: Copy setup-env.sh file to /usr/local/bin
+  copy:
+    src: "setup-env.sh"
+    dest: "/usr/local/bin"
+    mode: "0755"
+
+- name: copy routing.json to /tmp
+  template:
+    src: "routing.json"
+    dest: "/tmp/routing.json"

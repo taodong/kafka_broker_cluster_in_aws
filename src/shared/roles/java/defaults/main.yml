@@ -1,0 +1,17 @@
+---
+#
+# variables needed to be defined in user's playbook
+#
+
+#
+# java version variable
+#
+
+java_base_version: 8
+java_sub_version: 171
+java_base_build: 11
+oracle_url_hash: 512cd62ec5174c3487ac17c61aaa89e8
+
+java_version: "{{java_base_version}}u{{java_sub_version}}"
+java_build: "b{{java_base_build}}"
+java_version_with_build: "{{java_version}}-{{java_build}}"

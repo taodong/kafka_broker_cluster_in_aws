@@ -1,0 +1,29 @@
+---
+# file: tasks/main.yml
+# Setup Python Environment
+#
+
+- name: Installing python
+  yum:
+    name: python
+    state: latest
+
+- name: Installing python-pip
+  yum:
+    name: python-pip
+    state: latest
+
+- name: Installing python-devel libraries
+  yum:
+    name: python-devel
+    state: latest
+
+- name: Installing python-virtualenv libraries
+  yum:
+    name: python-virtualenv
+    state: latest
+
+- name: Installing openssl-devel libraries
+  yum:
+    name: openssl-devel
+    state: latest

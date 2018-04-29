@@ -1,0 +1,52 @@
+---
+# file: tasks/main.yml
+# Setup health check end point http://localhost:8080/status for given service
+#
+- name: Installing nginx
+  yum:
+    name: nginx
+    state: latest
+
+- name: Replace default nginx.conf
+  template:
+    src:  nginx/nginx.conf
+    dest: /etc/nginx/nginx.conf
+    mode: 0644
+
+- name: Add server.conf to nginx
+  template:
+    src: nginx/server.conf
+    dest: /etc/nginx/conf.d
+    mode: 0644
+
+- name: Installing flask
+  pip:
+    name: flask
+
+- name: Create folder for health monitor service
+  file:
+    path: /usr/local/health
+    state: directory
+    mode: 0755
+
+- name: Copy health web service to /usr/local/health
+  template:
+    src: health.py
+    dest: /usr/local/health
+    mode: 0644
+
+- name: Copy health-check service script to /etc/init.d
+  copy:
+    src: "init.d/health-check"
+    dest: "/etc/init.d/health-check"
+    mode: 0755
+
+- name: enable service for nginx
+  service:
+    name: nginx
+    enabled: true
+
+- name: enable service for health check
+  service:
+    name: health-check
+    enabled: true

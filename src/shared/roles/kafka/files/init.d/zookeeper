@@ -1,0 +1,135 @@
+#!/bin/bash
+
+###
+# chkconfig: 2345 25 75
+# description: kafka embedded zookeeper service script
+#
+# Installation (CentOS):
+# copy file to /etc/init.d
+# chmod +x /etc/init.d/zookeeper
+#
+# Installation (Ubuntu):
+# copy file to /etc/init.d
+# chmod +x /etc/init.d/zookeeper
+# update-rc.d zookeeper defaults
+#
+#
+# Usage: (as root)
+# service zookeeper start
+# service zookeeper stop
+# service zookeeper status
+#
+###
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# The directory in which your application is installed
+APPLICATION_DIR="/usr/local/kafka"
+START_EXEC="bin/zookeeper-server-start.sh -daemon config/zookeeper.properties"
+STOP_EXEC="bin/zookeeper-server-stop.sh"
+
+# colors
+red='\e[0;31m'
+green='\e[0;32m'
+yellow='\e[0;33m'
+reset='\e[0m'
+
+echoRed() { echo -e "${red}$1${reset}"; }
+echoGreen() { echo -e "${green}$1${reset}"; }
+echoYellow() { echo -e "${yellow}$1${reset}"; }
+
+# Check whether the zookeeper is running
+isRunning() {
+  # Check for running pid
+  PID=$(ps ax | grep java | grep -i QuorumPeerMain | grep -v grep | awk '{print $1}')
+  if [ ! -z "$PID" ]; then
+    if /bin/ps --pid "$PID" 1>&2 >/dev/null;
+    then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+start() {
+  if isRunning; then
+    echoYellow "Zookeeper is already running"
+    return 0
+  fi
+
+  echoGreen "Starting zookeeper..."
+  pushd "$APPLICATION_DIR" > /dev/null
+  eval "$START_EXEC"
+  popd > /dev/null
+
+  if isRunning; then
+    echoGreen "Zookeeper started"
+    exit 0
+  else
+    echoRed "Zookeeper has not started - check log"
+    exit 3
+  fi
+}
+
+restart() {
+  echo "Restarting zookeeper..."
+  stop
+  start
+}
+
+stop() {
+  echoGreen "Stopping zookeeper"
+  if isRunning; then
+    pushd "$APPLICATION_DIR" > /dev/null
+    eval "$STOP_EXEC"
+    popd > /dev/null
+  fi
+}
+
+status() {
+  if isRunning; then
+    echoGreen "Zookeeper is running"
+  else
+    echoRed "Zookeeper is either stopped or inaccessible"
+  fi
+}
+
+case "$1" in
+start)
+    start
+;;
+
+status)
+   status
+   exit 0
+;;
+
+stop)
+    if isRunning; then
+	stop
+	exit 0
+    else
+	echoRed "Zookeeper not running"
+	exit 3
+    fi
+;;
+
+restart)
+    stop
+    for i in {1..5}; do
+        if isRunning; then
+            echoGreen "Stopping Zookeeper..."
+            sleep 10s
+        else
+            echoGreen "Zookeeper has been stopped"
+            break
+        fi
+    done
+    start
+;;
+
+*)
+    echo "Usage: $0 {status|start|stop|restart}"
+    exit 1
+esac

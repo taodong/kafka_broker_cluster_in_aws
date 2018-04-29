@@ -1,0 +1,125 @@
+[
+  {
+    "source": "aws.properties",
+    "format": "properties",
+    "variables": [
+      {
+        "name": "aws.username",
+        "required": true,
+        "toolVars": {
+          "packer": "user",
+          "terragrunt": "user"
+        }
+      },
+      {
+        "name": "base.ami.id",
+        "required": true,
+        "toolVars": {
+          "packer": "base-ami-id"
+        }
+      },
+      {
+        "name": "aws.region",
+        "toolVars": {
+          "packer": "region",
+          "terragrunt": "region"
+        }
+      },
+      {
+        "name": "product",
+        "required": true,
+        "toolVars": {
+          "packer": "product",
+          "terragrunt": "product"
+        }
+      },
+      {
+        "name": "env",
+        "required": true,
+        "toolVars": {
+          "terragrunt": "env"
+        }
+      },
+      {
+        "name": "type",
+        "required": true,
+        "toolVars": {
+          "packer": "type",
+          "terragrunt": "type"
+        }
+      },
+      {
+        "name": "version",
+        "required": true,
+        "toolVars": {
+          "packer": "version",
+          "terragrunt": "version"
+        }
+      },
+      {
+        "name": "aws.keypair.name",
+        "required": true,
+        "toolVars": {
+          "terragrunt": "deployer_key_name"
+        }
+      },
+      {
+        "name": "kafka.server.number",
+        "required": true,
+        "toolVars": {
+          "terragrunt": "server_number"
+        }
+      },
+      {
+        "name": "kafka.instance.role.profile.name",
+        "required": true,
+        "toolVars": {
+          "terragrunt": "instance_role_profile"
+        }
+      },
+      {
+        "name": "kafka.instance.role.name",
+        "required": true,
+        "toolVars": {
+          "terragrunt": "instance_role_name"
+        }
+      },
+      {
+        "name": "vpc.id",
+        "required": true,
+        "toolVars": {
+          "terragrunt": "vpc_id"
+        }
+      },
+      {
+        "name": "vpc.private.subnets",
+        "required": true,
+        "type": "list",
+        "toolVars": {
+          "terragrunt": "private_subnets"
+        }
+      },
+      {
+        "name": "vpc.private.zone.id",
+        "required": true,
+        "toolVars": {
+          "terragrunt": "private_zone_id"
+        }
+      },
+      {
+        "name": "server.app.sg.id",
+        "required": true,
+        "toolVars": {
+          "terragrunt": "app_server_sg"
+        }
+      },
+      {
+        "name": "server.jump.sg.id",
+        "required": true,
+        "toolVars": {
+          "terragrunt": "jump_sg_id"
+        }
+      }
+    ]
+  }
+]
